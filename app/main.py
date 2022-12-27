@@ -118,7 +118,7 @@ async def refresh_token(response: Response, request: Request, Auth: AuthJWT = De
 
     # Handling response
     response.status_code = status.HTTP_200_OK
-    return {'access_token': access_token}
+    return {'status': 'success', 'access_token': access_token}
 
 
 @app.get('/logout')
@@ -141,6 +141,11 @@ async def onboard_influencer(data: OnBoardIn, response: Response, db: Session = 
     influencer = db.query(Influencer).filter(Influencer.username == data.username).first()
     if influencer:
         raise HTTPException(status_code = status.HTTP_403_FORBIDDEN, detail = "An influencer with these details has already been recoreded")
+
+    # Return a bad response if user is already an influencer
+    existing_influencer = db.query(Influencer).filter(Influencer.user_id == user_id).first()
+    if existing_influencer:
+        raise HTTPException(status_code = status.HTTP_403_FORBIDDEN, detail = "This user is already an influencer")
 
     # Creating new influencer with data given and adding to the db
     new_influencer = Influencer(user_id = user_id, **data.dict())
@@ -171,7 +176,7 @@ async def search_influencers(response: Response, db: Session = Depends(get_db), 
 
     # Using the keyword to search bios and usernames of influencers
     if keyword:
-        all_influencers = [influencer for influencer in all_influencers if (influencer.bio and keyword in influencer.bio) or keyword in influencer.username]
+        all_influencers = [influencer for influencer in all_influencers if (influencer.bio and keyword.lower() in influencer.bio.lower()) or keyword.lower() in influencer.username.lower()]
 
     # Handling response
     response.status_code = status.HTTP_200_OK
