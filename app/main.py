@@ -5,9 +5,9 @@ from sqlalchemy.orm import Session
 
 from datetime import timedelta
 
-from .schemas import RegisterIn
+from .schemas import RegisterIn, OnBoardIn
 
-from .models import User
+from .models import User, Influencer
 
 from .utils import hash_password, compare_password
 
@@ -15,7 +15,7 @@ from .database import get_db
 
 from .config import settings
 
-from .auth import AuthJWT
+from .auth import AuthJWT, authenticate
 
 ACCESS_TOKEN_EXPIRES_IN = settings.ACCESS_TOKEN_EXPIRES_IN
 REFRESH_TOKEN_EXPIRES_IN = settings.REFRESH_TOKEN_EXPIRES_IN
@@ -101,3 +101,20 @@ async def logout(response: Response, Auth: AuthJWT = Depends()):
     Auth.unset_jwt_cookies()
     response.status_code = status.HTTP_200_OK
     return {'status': 'success'}
+
+
+@app.post('/onboarding')
+async def onboard_influencer(data: OnBoardIn, response: Response, db: Session = Depends(get_db), user_id = Depends(authenticate)):
+    """
+    """
+    influencer = db.query(Influencer).filter(Influencer.username == data.username).first()
+    if influencer:
+        raise HTTPException(status_code = status.HTTP_403_FORBIDDEN, detail = "An influencer with these details has already been recoreded")
+
+    new_influencer = Influencer(user_id = user_id, **data.dict())
+    db.add(new_influencer)
+    db.commit()
+    db.refresh(new_influencer)
+    response.status_code = status.HTTP_201_CREATED
+    return {'status': 'success', 'data': new_influencer}
+    
