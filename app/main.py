@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Depends, HTTPException, status, Response
+from fastapi import FastAPI, Depends, HTTPException, status, Response, Request
 from fastapi.middleware.cors import CORSMiddleware
 
 from sqlalchemy.orm import Session
@@ -67,3 +67,37 @@ async def login(data: RegisterIn, response: Response, db: Session = Depends(get_
     del user.password
     response.status_code = status.HTTP_200_OK
     return {'status': 'success', 'access_token': access_token, 'refresh_token': refresh_token, 'data': user}
+
+
+@app.get('/refresh')
+async def refresh_token(response: Response, request: Request, Auth: AuthJWT = Depends(), db: Session = Depends(get_db)):
+    """
+    """
+    try:
+        Auth.jwt_refresh_token_required()
+
+        user_id = Auth.get_jwt_subject()
+        if not user_id:
+            raise HTTPException(status_code = status.HTTP_401_UNAUTHORIZED, detail = 'Could not refresh access token')
+        
+        user = db.query(User).filter(User.id == user_id).first()
+        if not user:
+            raise HTTPException(status_code = status.HTTP_401_UNAUTHORIZED, detail = "User account deleted recently")
+
+        access_token = Auth.create_access_token(subject = str(user.id), expires_time = timedelta(minutes = ACCESS_TOKEN_EXPIRES_IN))
+    except Exception as e:
+        raise HTTPException(status_code = status.HTTP_500_INTERNAL_SERVER_ERROR, detail = e.__class__.__name__)
+
+    response.set_cookie('access_token', access_token, ACCESS_TOKEN_EXPIRES_IN * 60, ACCESS_TOKEN_EXPIRES_IN * 60, '/', None, False, True, 'lax')
+
+    response.status_code = status.HTTP_200_OK
+    return {'access_token': access_token}
+
+
+@app.get('/logout')
+async def logout(response: Response, Auth: AuthJWT = Depends()):
+    """
+    """
+    Auth.unset_jwt_cookies()
+    response.status_code = status.HTTP_200_OK
+    return {'status': 'success'}
