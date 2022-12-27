@@ -11,7 +11,7 @@ class Settings(BaseSettings):
     ACCESS_TOKEN_EXPIRES_IN: int = os.environ["ACCESS_TOKEN_EXPIRES_IN"]
     REFRESH_TOKEN_EXPIRES_IN: int = os.environ["REFRESH_TOKEN_EXPIRES_IN"]
 
-    JWT_SECRET: str = os.environ["JWT_SECRET"]
+    JWT_SECRET_KEY: str = os.environ["JWT_SECRET_KEY"]
 
 
 settings = Settings()
