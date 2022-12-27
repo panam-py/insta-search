@@ -1,4 +1,5 @@
 from pydantic import BaseModel, EmailStr, constr
+from typing import Optional
 
 class RegisterIn(BaseModel):
     email: EmailStr
@@ -8,4 +9,4 @@ class RegisterIn(BaseModel):
 class OnBoardIn(BaseModel):
     username: str
     follower_count: int
-    bio: constr(max_length = 100)
+    bio: Optional[constr(max_length = 100)] = None
