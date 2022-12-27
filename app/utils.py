@@ -13,4 +13,4 @@ def compare_password(password: str, hash: str) -> bool:
     """
     Compares provided password with hashed password
     """
-    return bcrypt.checkpw(password, hash)
+    return bcrypt.checkpw(password.encode('utf-8'), hash.encode('utf-8'))
