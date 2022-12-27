@@ -1,6 +1,8 @@
 from fastapi import FastAPI, Depends, HTTPException, status, Response, Request
 from fastapi.middleware.cors import CORSMiddleware
 
+from typing import Optional
+
 from sqlalchemy.orm import Session
 
 from datetime import timedelta
@@ -117,4 +119,27 @@ async def onboard_influencer(data: OnBoardIn, response: Response, db: Session = 
     db.refresh(new_influencer)
     response.status_code = status.HTTP_201_CREATED
     return {'status': 'success', 'data': new_influencer}
+
+
+@app.get('/search')
+async def search_influencers(response: Response, db: Session = Depends(get_db), keyword: Optional[str] = None, min_followers: Optional[int] = None, max_followers: Optional[int] = None):
+    """
+    """
+    all_influencers = db.query(Influencer).all()
+    
+    if max_followers:
+        all_influencers = [influencer for influencer in all_influencers if influencer.follower_count <= max_followers]
+    
+    if min_followers:
+        all_influencers = [influencer for influencer in all_influencers if influencer.follower_count >= min_followers]
+
+    if keyword:
+        all_influencers = [influencer for influencer in all_influencers if (influencer.bio and keyword in influencer.bio) or keyword in influencer.username]
+
+    response.status_code = status.HTTP_200_OK
+    return {'status': 'success', 'count': len(all_influencers), 'data': all_influencers}
+
+
+        
+
     
