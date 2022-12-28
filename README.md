@@ -45,4 +45,4 @@ JWT_SECRET_KEY: string ( A secure string which will help with JWT orchestration)
 If you've completed the above steps, you are good to go with using the application.
 
 ## Usage
-You can follow through with the API collection to see the app usage.
+You can follow through with the [API collection](https://documenter.getpostman.com/view/17243864/2s8Z6yVXVh) to see the app usage.
