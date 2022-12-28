@@ -140,7 +140,7 @@ async def onboard_influencer(data: OnBoardIn, response: Response, db: Session = 
     # Return a bad response if there is already an influencer with this username
     influencer = db.query(Influencer).filter(Influencer.username == data.username).first()
     if influencer:
-        raise HTTPException(status_code = status.HTTP_403_FORBIDDEN, detail = "An influencer with these details has already been recoreded")
+        raise HTTPException(status_code = status.HTTP_403_FORBIDDEN, detail = "An influencer with this username has already been recorded")
 
     # Return a bad response if user is already an influencer
     existing_influencer = db.query(Influencer).filter(Influencer.user_id == user_id).first()
